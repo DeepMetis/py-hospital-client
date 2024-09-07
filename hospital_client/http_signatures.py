@@ -9,9 +9,10 @@ from Crypto.PublicKey import RSA
 
 import asyncio
 import aiohttp
+from utils import logger
 
 
-def load_rsa_key(path: str = "./certs/private_key.pem") -> RSA.RsaKey:
+def load_rsa_key(path: str) -> RSA.RsaKey:
     with open(path, "rb") as key_file:
         return RSA.import_key(key_file.read())
 
@@ -28,7 +29,6 @@ def create_signature_headers(
     content_hash = hashlib.sha256(message).hexdigest()
     hash_obj = SHA256.new(f"{content_hash},{created}".encode("utf-8"))
     signature = pkcs1_15.new(private_key).sign(hash_obj)
-
     return {
         "content-type": "application/json",
         "accept": "application/json",
@@ -43,6 +43,7 @@ def add_signature_headers(
 ):
     headers, error = create_signature_headers(data, private_key)
     if error is not None or headers is None:
+        logger.info("could not add signature headers to session")
         return
 
     [session.headers.add(header, val) for header, val in headers.items()]
@@ -50,29 +51,28 @@ def add_signature_headers(
 
 
 async def test():
-    rsa_key = load_rsa_key()
+    rsa_key = load_rsa_key("./certs/private_key.pem")
     key = "test"
-    passKey = "test"
+    code = "test"
     async with aiohttp.ClientSession() as session:
         url = "http://localhost:8080/service"
         payload = {
             "key": key,
-            "pass": passKey,
-            "handlers_interval": {"unit": "minutes", "value": 1},
-            "check_plugins": [{"type": "pulse", "data": {"max_allowed_interval": 20}}],
-            "check_failure_handlers": [{"type": "log", "data": {}}],
+            "code": code,
+            "handlersInterval": {"unit": "minutes", "value": 1},
+            "checkPlugins": [{"type": "pulse", "data": {"max_allowed_interval": 20}}],
+            "failureHandlers": [{"type": "log", "data": {}}],
         }
         headers, error = create_signature_headers(
-            f"{payload['key']}:{payload['pass']}",
+            code,
             rsa_key,
         )
         if error is not None or headers is None:
-            print(error)
             return
         [session.headers.add(header, val) for header, val in headers.items()]
         async with session.post(url, json=payload) as response:
-            print(response.status)
-            print(await response.json())
+            logger.info(response.status)
+            logger.info(await response.json())
 
 
 if __name__ == "__main__":
