@@ -1,8 +1,14 @@
 import asyncio
 import aiohttp
 
-from utils import transform_dict_keys, logger
-from models import (
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
+from hospital_client.utils import transform_dict_keys, logger
+from hospital_client.models import (
     CheckWrappers,
     CheckerActiveWrapper,
     CheckerPulseWrapper,
@@ -14,8 +20,8 @@ from models import (
     PluginType,
     Service,
 )
-from service import HospitalService, PulseWorker
-from http_signatures import load_rsa_key, add_signature_headers
+from hospital_client.service import HospitalService, PulseWorker
+from hospital_client.http_signatures import load_rsa_key, add_signature_headers
 
 
 class ServiceBuilder:
@@ -162,7 +168,7 @@ async def test():
     try:
         while True:
             await asyncio.sleep(1)
-    except Exception as e:
+    except Exception:
         logger.error(
             "Stopping the worker",
         )

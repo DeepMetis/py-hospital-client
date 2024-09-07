@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 from typing import Annotated, Union
 from pydantic import (
     BaseModel,
@@ -6,10 +7,8 @@ from pydantic import (
     Field,
     field_serializer,
     field_validator,
-    model_serializer,
 )
 from pydantic.alias_generators import to_camel
-from typing import Literal
 
 
 class CamelCaseBaseModel(BaseModel):
@@ -115,8 +114,8 @@ class Service(CamelCaseBaseModel):
             plugin = v[i]
             try:
                 plugin = WrapperAnon(**v[i])
-            except:
-                raise ValueError(f"Invalid plugin data at index {i}")
+            except Exception as e:
+                raise ValueError(e)
             plugin = check_wrapper(plugin)
             plugins.append(plugin)
         return plugins
@@ -132,8 +131,8 @@ class Service(CamelCaseBaseModel):
             plugin = v[i]
             try:
                 plugin = WrapperAnon(**v[i])
-            except:
-                raise ValueError(f"Invalid plugin data at index {i}")
+            except Exception as e:
+                raise ValueError(e)
             plugin = failure_handler_wrapper(plugin)
             plugins.append(plugin)
         return plugins

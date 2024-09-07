@@ -1,7 +1,8 @@
+import logging
+
 from typing import Callable
 from pydantic.alias_generators import to_camel
 
-import logging
 
 logger = logging.getLogger("hospital-client")
 

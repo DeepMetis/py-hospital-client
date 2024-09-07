@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
 import asyncio
-from typing import Any, Callable, Coroutine
-from Crypto.PublicKey import RSA
 import aiohttp
 
-from utils import transform_dict_keys, logger
-from models import Service
-from http_signatures import add_signature_headers
+from abc import ABC, abstractmethod
+from typing import Any, Callable, Coroutine
+from Crypto.PublicKey import RSA
+
+from hospital_client.utils import transform_dict_keys, logger
+from hospital_client.models import Service
+from hospital_client.http_signatures import add_signature_headers
 
 
 class HospitalWorker(ABC):
