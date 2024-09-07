@@ -20,7 +20,8 @@ from hospital_client.models import (
     PluginType,
     Service,
 )
-from hospital_client.service import HospitalService, PulseWorker
+from hospital_client.service import HospitalService
+from hospital_client.workers import PulseWorker
 from hospital_client.http_signatures import load_rsa_key, add_signature_headers
 
 
