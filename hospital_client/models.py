@@ -33,7 +33,11 @@ class PluginType(str, Enum):
     HANDLER_SLACK = "slack"
 
 
-class CheckerActiveWrapper(CamelCaseBaseModel):
+class BaseChecker(CamelCaseBaseModel):
+    pass
+
+
+class CheckerActiveWrapper(BaseChecker):
     type: Literal[PluginType.CHECKER_ACTIVE] = Field(
         Literal[PluginType.CHECKER_ACTIVE], exclude=True
     )
@@ -41,19 +45,23 @@ class CheckerActiveWrapper(CamelCaseBaseModel):
     expected_status: int = 200
 
 
-class CheckerPulseWrapper(Interval, CamelCaseBaseModel):
+class CheckerPulseWrapper(Interval, BaseChecker):
     type: Literal[PluginType.CHECKER_PULSE] = Field(
         Literal[PluginType.CHECKER_PULSE], exclude=True
     )
 
 
-class HandlerLogWrapper(CamelCaseBaseModel):
+class BaseHandler(CamelCaseBaseModel):
+    pass
+
+
+class HandlerLogWrapper(BaseHandler):
     type: Literal[PluginType.HANDLER_LOG] = Field(
         Literal[PluginType.HANDLER_LOG], exclude=True
     )
 
 
-class HandlerSlackWrapper(CamelCaseBaseModel):
+class HandlerSlackWrapper(BaseHandler):
     type: Literal[PluginType.HANDLER_SLACK] = Field(
         PluginType.HANDLER_SLACK, exclude=True
     )
@@ -108,16 +116,21 @@ class Service(CamelCaseBaseModel):
     failure_handlers: list[HandlerWrappers]
 
     @field_validator("check_plugins", mode="before")
-    def validate_check_plugins(cls, v: list[dict]) -> list[CheckWrappers]:
+    def validate_check_plugins(
+        cls, v: list[dict] | list[CheckWrappers]
+    ) -> list[CheckWrappers]:
         plugins: list[CheckWrappers] = []
         for i in range(len(v)):
             plugin = v[i]
-            try:
-                plugin = WrapperAnon(**v[i])
-            except Exception as e:
-                raise ValueError(e)
-            plugin = check_wrapper(plugin)
-            plugins.append(plugin)
+            if type(plugin) is dict:
+                plugin = WrapperAnon(**plugin)
+                plugin = check_wrapper(plugin)
+            elif issubclass(type(plugin), BaseChecker):
+                pass
+            else:
+                raise ValueError(f"Unsupported checker type: {type(plugin)}")
+
+            plugins.append(plugin)  # type: ignore
         return plugins
 
     @field_serializer("check_plugins")
@@ -125,16 +138,21 @@ class Service(CamelCaseBaseModel):
         return [WrapperAnon(type=plugin.type, data=plugin.model_dump()) for plugin in v]
 
     @field_validator("failure_handlers", mode="before")
-    def validate_failure_handlers(cls, v: list[dict]) -> list[HandlerWrappers]:
+    def validate_failure_handlers(
+        cls, v: list[dict] | list[HandlerWrappers]
+    ) -> list[HandlerWrappers]:
         plugins: list[HandlerWrappers] = []
         for i in range(len(v)):
             plugin = v[i]
-            try:
-                plugin = WrapperAnon(**v[i])
-            except Exception as e:
-                raise ValueError(e)
-            plugin = failure_handler_wrapper(plugin)
-            plugins.append(plugin)
+            if type(plugin) is dict:
+                plugin = WrapperAnon(**plugin)
+                plugin = failure_handler_wrapper(plugin)
+            elif issubclass(type(plugin), BaseHandler):
+                pass
+            else:
+                raise ValueError(f"Unsupported failure handler type: {type(plugin)}")
+
+            plugins.append(plugin)  # type: ignore
         return plugins
 
     @field_serializer("failure_handlers")

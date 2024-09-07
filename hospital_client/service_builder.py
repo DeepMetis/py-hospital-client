@@ -10,10 +10,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from hospital_client.utils import transform_dict_keys, logger
 from hospital_client.models import (
     CheckWrappers,
-    CheckerActiveWrapper,
     CheckerPulseWrapper,
     HandlerLogWrapper,
-    HandlerSlackWrapper,
     HandlerWrappers,
     Interval,
     IntervalUnit,
@@ -141,10 +139,6 @@ async def test():
     builder = builder.interval(Interval(unit=IntervalUnit.MINUTES, value=10))
     builder = builder.add_checks(
         [
-            CheckerActiveWrapper(
-                type=PluginType.CHECKER_ACTIVE,
-                url="https://wealthy-entirely-cow.ngrok-free.app/ping",
-            ),
             CheckerPulseWrapper(
                 type=PluginType.CHECKER_PULSE, unit=IntervalUnit.SECONDS, value=30
             ),
@@ -153,10 +147,6 @@ async def test():
     builder = builder.add_failure_handlers(
         [
             HandlerLogWrapper(type=PluginType.HANDLER_LOG),
-            HandlerSlackWrapper(
-                type=PluginType.HANDLER_SLACK,
-                hook_url="https://hooks.slack.com/triggers/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",
-            ),
         ]
     )
 
