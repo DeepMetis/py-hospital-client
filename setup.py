@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="hospital-client",
-    version="0.1.1",
+    version="0.1.2",
     packages=find_packages(),
-    install_requires=[],  # Specify any dependencies here
+    install_requires=["aiohttp==3.10.5", "pydantic==2.9.0", "pycryptodome==3.20.0"],
     author="Karim Dahmeni",
     author_email="karim.dahmeni@deepmetis.com",
     description="A client for interacting with the service hospital",
