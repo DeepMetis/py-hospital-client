@@ -8,7 +8,7 @@ from hospital_client.utils import logger
 
 class HospitalWorker(ABC):
     @abstractmethod
-    async def work(self, cb: Coroutine[Any, Any, Any], interval: int):
+    def start(self):
         pass
 
     @abstractmethod
@@ -19,6 +19,10 @@ class HospitalWorker(ABC):
     def restart():
         pass
 
+    @abstractmethod
+    async def work(self):
+        pass
+
 
 class PulseWorker(HospitalWorker):
     def __init__(self, cb: Callable[[], Coroutine[Any, Any, bool]], pulse_interval=10):
@@ -26,10 +30,10 @@ class PulseWorker(HospitalWorker):
         self.pulse_task = None
         self.pulse_interval = max(pulse_interval, 1)
 
-    async def work(self):
-        if self.pulse_task:
-            self.cancel()
-        self.pulse_task = asyncio.create_task(self._pulse())
+    def start(self):
+        if self.pulse_task is not None:
+            return
+        self.pulse_task = asyncio.create_task(self.work())
         logger.info("started pulse worker")
 
     def cancel(self):
@@ -41,10 +45,10 @@ class PulseWorker(HospitalWorker):
 
     def restart(self):
         self.cancel()
-        asyncio.create_task(self._pulse())
+        asyncio.create_task(self.work())
         logger.info("restarted pulse worker")
 
-    async def _pulse(self):
+    async def work(self):
         tries = 3
         while True:
             try:
