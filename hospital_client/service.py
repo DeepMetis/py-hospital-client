@@ -30,7 +30,7 @@ class HospitalService:
     async def update(self):
         service = self.service
         async with aiohttp.ClientSession() as session:
-            url = f"{service.base_url}/service/update"
+            url = f"{service.base_url}/service"
             session_with_headers = add_signature_headers(
                 session, service.key, self.rsa_key
             )
