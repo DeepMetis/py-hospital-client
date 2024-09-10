@@ -55,7 +55,8 @@ class PulseWorker(HospitalWorker):
                 ok = await self.cb()
                 if not ok:
                     tries -= 1
-                    raise RuntimeError("Pulse check failed")
+                    await asyncio.sleep(1)
+                    continue
 
                 if ok or tries <= 0:
                     tries = 3
@@ -64,7 +65,6 @@ class PulseWorker(HospitalWorker):
                 break
             except Exception as e:
                 logger.error(e)
-                await asyncio.sleep(2)
                 continue
 
     def update_interval(self, pulse_interval: int):

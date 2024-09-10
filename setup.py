@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hospital-client",
-    version="0.1.7",
+    version="0.1.8",
     packages=find_packages(),
     install_requires=["aiohttp>=3.10.5", "pydantic>=2.5.0", "pycryptodome>=3.15.0"],
     author="Karim Dahmeni",
